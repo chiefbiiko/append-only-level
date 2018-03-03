@@ -1,0 +1,30 @@
+{
+  "name": "append-only-level",
+  "version": "0.0.0",
+  "description": "an append only log interface operating on a levelup",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chiefbiiko/append-only-level.git"
+  },
+  "keywords": [
+    "append-only-log",
+    "leveldb",
+    "levelup",
+    "level"
+  ],
+  "author": "Noah Anabiik Schwarz",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chiefbiiko/append-only-level/issues"
+  },
+  "homepage": "https://github.com/chiefbiiko/append-only-level#readme",
+  "devDependencies": {
+    "levelup": "^2.0.2",
+    "memdown": "^2.0.0",
+    "tape": "^4.9.0"
+  }
+}
