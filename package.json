@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/chiefbiiko/append-only-level#readme",
   "devDependencies": {
+    "encoding-down": "^4.0.0",
     "levelup": "^2.0.2",
     "memdown": "^2.0.0",
     "tape": "^4.9.0"
