@@ -29,9 +29,5 @@
     "memdown": "^2.0.0",
     "tape": "^4.9.0"
   },
-  "dependencies": {
-    "multipipe": "^2.0.3",
-    "pump": "^3.0.0",
-    "stream-set": "^1.1.0"
-  }
+  "dependencies": {}
 }

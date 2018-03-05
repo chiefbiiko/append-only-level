@@ -59,20 +59,22 @@ tape('size aka length', function (t) {
   })
 })
 
-tape.only('live', function (t) {
+tape('log.createReadStream(opts)', function (t) {
   var log = Log(levelup(memdown('./fraud.db')))
-  var chunks = []
+  var values = []
   log.append('fraud', function (err, seq) {
     if (err) t.end(err)
-    var ls = log.createLiveStream()
-    ls.on('data', function (chunk) {
-      chunks.push(chunk)
-    })
     log.append('world', function (err, seq) {
       if (err) t.end(err)
-      t.is(chunks.join(' '), 'fraud world', 'got the live update')
-      ls.destroy()
-      t.end()
+      var rs = log.createReadStream()
+      rs.on('data', function (kv) {
+        values.push(kv.value.toString())
+      })
+      rs.on('end', function () {
+        t.is(values.join(' '), 'fraud world', 'got all')
+        rs.destroy()
+        t.end()
+      })
     })
   })
 })
