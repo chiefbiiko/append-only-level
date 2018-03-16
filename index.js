@@ -1,10 +1,14 @@
 // TODO: live stream, pass thru error events, level-errors
 
+var stremSet = require('stream-set')
+
 function Log (db) {
   if (!(this instanceof Log)) return new Log(db)
   else if (!db) throw Error('levelup instance required')
   this._db = db
   this._head = -1
+  this._livestreams = streamSet()
+  this._next = seed(init)
 }
 
 function count () {
@@ -19,6 +23,12 @@ Log.prototype.append = function append (value, cb) {
   this._db.put(String(++this._head), value, function (err) {
     if (err) return cb.call(self, err)
     cb.call(self, null, self._head)
+  })
+  var currentKey = 
+  this._livestreams.forEach(function (livestream) {
+    livestream.write(Buffer.concat([
+      
+    ]))
   })
 }
 
