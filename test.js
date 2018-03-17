@@ -5,7 +5,7 @@ var memdown = require('memdown')
 var enc = require('encoding-down')
 
 tape('append', function (t) {
-  var log = Log(levelup(memdown('./fraud.db')))
+  var log = Log(levelup(memdown('./append.db')))
   log.append('fraud', function (err, seq) {
     if (err) t.end(err)
     log.get(seq, function (err, value) {
@@ -17,7 +17,7 @@ tape('append', function (t) {
 })
 
 tape('object mode', function (t) {
-  var log = Log(levelup(enc(memdown('./fraud.db'), { valueEncoding: 'json' })))
+  var log = Log(levelup(enc(memdown('./mode.db'), { valueEncoding: 'json' })))
   var record = { name: 'chiefbiiko', biz: 'fraud' }
   log.append(record, function (err, seq) {
     if (err) t.end(err)
@@ -30,7 +30,7 @@ tape('object mode', function (t) {
 })
 
 tape('autoboxing', function (t) {
-  var log = Log(levelup(memdown('./fraud.db')))
+  var log = Log(levelup(memdown('./box.db')))
   log.append('fraud', function (err, seq) {
     if (err) t.end(err)
     t.true(this === log, 'this === log in append cb')
@@ -43,7 +43,7 @@ tape('autoboxing', function (t) {
 })
 
 tape('size aka length', function (t) {
-  var log = Log(levelup(memdown('./fraud.db')))
+  var log = Log(levelup(memdown('./size.db')))
   t.is(log.length, 0, 'length 0')
   t.is(log.size, 0, 'size 0')
   log.append('fraud', function (err, seq) {
@@ -60,7 +60,7 @@ tape('size aka length', function (t) {
 })
 
 tape('log.createReadStream(opts)', function (t) {
-  var log = Log(levelup(memdown('./fraud.db')))
+  var log = Log(levelup(memdown('./read.db')))
   var values = []
   log.append('fraud', function (err, seq) {
     if (err) t.end(err)
@@ -80,7 +80,7 @@ tape('log.createReadStream(opts)', function (t) {
 })
 
 tape('log.createLiveStream(opts)', function (t) {
-  var log = Log(levelup(memdown('./fraud.db')))
+  var log = Log(levelup(memdown('./live.db')))
   var values = []
   log.append('fast', function (err, seq) {
     if (err) t.end(err)
@@ -104,9 +104,8 @@ tape('log.createLiveStream(opts)', function (t) {
   })
 })
 
-
 tape('log.createLiveStream(opts) - lt', function (t) {
-  var log = Log(levelup(memdown('./fraud.db')))
+  var log = Log(levelup(memdown('./lt.db')))
   var values = []
   log.append('fast', function (err, seq) {
     if (err) t.end(err)
@@ -130,7 +129,7 @@ tape('log.createLiveStream(opts) - lt', function (t) {
 })
 
 tape('log.createLiveStream(opts) - limit', function (t) {
-  var log = Log(levelup(memdown('./fraud.db')))
+  var log = Log(levelup(memdown('./limit.db')))
   var values = []
   log.append('fast', function (err, seq) {
     if (err) t.end(err)
@@ -155,7 +154,7 @@ tape('log.createLiveStream(opts) - limit', function (t) {
 
 tape('log.createLiveStream(opts) - values only', function (t) {
   t.plan(5)
-  var log = Log(levelup(memdown('./moon.db')))
+  var log = Log(levelup(memdown('./values.db')))
   var values = []
   log.append('fast', function (err, seq) {
     if (err) t.end(err)
@@ -175,4 +174,57 @@ tape('log.createLiveStream(opts) - values only', function (t) {
       if (err) t.end(err)
     })
   })
+})
+
+tape('log.createLiveStream(opts) - gte', function (t) {
+  var log = Log(levelup(memdown('./gte.db')))
+  var values = []
+  log.append('fast', function (err, seq) {
+    if (err) t.end(err)
+    var ls = log.createLiveStream({ gte: '1' })
+    var count = 0
+    ls.on('data', function (kv) {
+      count++
+      values.push(kv.value.toString())
+      if (count === 2) {
+        t.is(values.join(' '), 'fraud money', 'live - gte "1"')
+        ls.destroy()
+        t.end()
+      }
+    })
+    log.append('fraud', function (err, seq) {
+      if (err) t.end(err)
+      log.append('money', function (err, seq) {
+        if (err) t.end(err)
+      })
+    })
+  })
+})
+
+tape('log.createAppendStream(opts)', function (t) {
+  var log = Log(levelup(memdown('./as.db')))
+  var pt = require('stream').PassThrough()
+  var as = log.createAppendStream()
+  pt.pipe(as)
+  pt.write('hello')
+  pt.write('people')
+  setTimeout(function () {
+    t.is(log.size, 2, 'thru an append stream')
+    t.end()
+  }, 100)
+})
+
+tape('log.createAppendStream(opts) - limit 2', function (t) {
+  var log = Log(levelup(memdown('./aslimit.db')))
+  var pt = require('stream').PassThrough()
+  var as = log.createAppendStream({ limit: 2 })
+  pt.pipe(as)
+  pt.write('hello')
+  pt.write('lions')
+  pt.write('hello')
+  pt.write('panthers')
+  setTimeout(function () {
+    t.is(log.size, 2, 'thru an append stream')
+    t.end()
+  }, 100)
 })
