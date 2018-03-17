@@ -103,3 +103,76 @@ tape('log.createLiveStream(opts)', function (t) {
     })
   })
 })
+
+
+tape('log.createLiveStream(opts) - lt', function (t) {
+  var log = Log(levelup(memdown('./fraud.db')))
+  var values = []
+  log.append('fast', function (err, seq) {
+    if (err) t.end(err)
+    var ls = log.createLiveStream({ lt: '2' })
+    ls.on('data', function (kv) {
+      values.push(kv.value.toString())
+    })
+    // livestream has end event bc of its lt constraint
+    ls.on('end', function () {
+      t.is(values.join(' '), 'fast fraud', 'got live updates - lt "2"')
+      ls.destroy()
+      t.end()
+    })
+    log.append('fraud', function (err, seq) {
+      if (err) t.end(err)
+      log.append('money', function (err, seq) {
+        if (err) t.end(err)
+      })
+    })
+  })
+})
+
+tape('log.createLiveStream(opts) - limit', function (t) {
+  var log = Log(levelup(memdown('./fraud.db')))
+  var values = []
+  log.append('fast', function (err, seq) {
+    if (err) t.end(err)
+    var ls = log.createLiveStream({ limit: 2 })
+    ls.on('data', function (kv) {
+      values.push(kv.value.toString())
+    })
+    // livestream has end event bc of its limit constraint
+    ls.on('end', function () {
+      t.is(values.join(' '), 'fast fraud', 'got live updates - limit 2')
+      ls.destroy()
+      t.end()
+    })
+    log.append('fraud', function (err, seq) {
+      if (err) t.end(err)
+      log.append('money', function (err, seq) {
+        if (err) t.end(err)
+      })
+    })
+  })
+})
+
+tape('log.createLiveStream(opts) - values only', function (t) {
+  t.plan(5)
+  var log = Log(levelup(memdown('./moon.db')))
+  var values = []
+  log.append('fast', function (err, seq) {
+    if (err) t.end(err)
+    var ls = log.createLiveStream({ keys: false, values: true })
+    var count = 0
+    ls.on('data', function (value) {
+      count++
+      t.false(value.constructor === Object, 'not Object')
+      t.true(value.constructor === Buffer, 'Buffer')
+      values.push(value.toString())
+      if (count === 2) {
+        t.is(values.join(' '), 'fast fraud', 'live values only')
+        ls.destroy()
+      }
+    })
+    log.append('fraud', function (err, seq) {
+      if (err) t.end(err)
+    })
+  })
+})
