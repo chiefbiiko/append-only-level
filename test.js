@@ -78,3 +78,28 @@ tape('log.createReadStream(opts)', function (t) {
     })
   })
 })
+
+tape('log.createLiveStream(opts)', function (t) {
+  var log = Log(levelup(memdown('./fraud.db')))
+  var values = []
+  log.append('fast', function (err, seq) {
+    if (err) t.end(err)
+    var ls = log.createLiveStream()
+    var count = 0
+    ls.on('data', function (kv) {
+      count++
+      values.push(kv.value.toString())
+      if (count === 3) {
+        t.is(values.join(' '), 'fast fraud money', 'got live updates')
+        ls.destroy()
+        t.end()
+      }
+    })
+    log.append('fraud', function (err, seq) {
+      if (err) t.end(err)
+      log.append('money', function (err, seq) {
+        if (err) t.end(err)
+      })
+    })
+  })
+})

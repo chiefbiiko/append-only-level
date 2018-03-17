@@ -1,14 +1,13 @@
 // TODO: live stream, pass thru error events, level-errors
 
-var stremSet = require('stream-set')
+var Readable = require('readable-stream')
+var debug = require('debug')('append-only-level')
 
 function Log (db) {
   if (!(this instanceof Log)) return new Log(db)
   else if (!db) throw Error('levelup instance required')
   this._db = db
   this._head = -1
-  this._livestreams = streamSet()
-  this._next = seed(init)
 }
 
 function count () {
@@ -24,12 +23,6 @@ Log.prototype.append = function append (value, cb) {
     if (err) return cb.call(self, err)
     cb.call(self, null, self._head)
   })
-  var currentKey = 
-  this._livestreams.forEach(function (livestream) {
-    livestream.write(Buffer.concat([
-      
-    ]))
-  })
 }
 
 Log.prototype.get = function get (key, cb) {
@@ -39,6 +32,31 @@ Log.prototype.get = function get (key, cb) {
 Log.prototype.createReadStream = function createReadStream (opts) {
   if (!opts) opts = {}
   return this._db.createReadStream(opts)
+}
+
+// TODO: implement level Readable options
+Log.prototype.createLiveStream = function createLiveStream (opts) {
+  var self = this
+  if (!opts) opts = {}
+  var live = new Readable({
+    objectMode: true,
+    read () {
+      var that = this
+      debug('that._head, self._head::', that._head, self._head)
+      if (that._head === self._head) return
+      that._head++
+      debug('gettin::', that._head)
+      self.get(that._head, function (err, value) {
+        if (err) return that.emit('error', err)
+        debug('value::', value)
+        var more = that.push({ key: String(that._head), value: value })
+        debug('more::', more)
+        if (more) that._read()
+      })
+    }
+  })
+  live._head = -1
+  return live
 }
 
 module.exports = Log

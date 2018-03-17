@@ -29,5 +29,7 @@
     "memdown": "^2.0.0",
     "tape": "^4.9.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "readable-stream": "^2.3.5"
+  }
 }
