@@ -1,14 +1,10 @@
-// TODO: level-errors
-
 var Readable = require('readable-stream')
 var Writable = require('stream').Writable
 var debug = require('debug')('append-only-level')
-var assert = require('assert').ok
-var isNumber = require('util').isNumber
 
 function Log (db) {
   if (!(this instanceof Log)) return new Log(db)
-  else if (!db) throw Error('levelup instance required')
+  else if (!db) throw TypeError('levelup instance required', __filename, 7)
   this._db = db
   this._head = -1
 }
@@ -39,12 +35,9 @@ Log.prototype.createReadStream = function createReadStream (opts) {
 Log.prototype.createLiveStream = function createLiveStream (opts) {
   var self = this
   opts = Object.assign({ limit: -1, keys: true, values: true }, opts || {})
-  opts.lt = parseInt(opts.lt) || -1
-  opts.lte = parseInt(opts.lte) || -99
-  debug('opts.lt, opts.lte::', opts.lt, opts.lte)
-  assert(opts.lt >= -1, 'opts.lt not gte -1')
-  assert(isNumber(opts.lte), 'opts.lte is not a number')
-  var live = new Readable({
+  opts.lt = Number(opts.lt) || -1
+  opts.lte = Number(opts.lte) || -99
+  var liveStream = new Readable({
     objectMode: true,
     read () {
       var that = this
@@ -72,16 +65,15 @@ Log.prototype.createLiveStream = function createLiveStream (opts) {
       })
     }
   })
-  if (opts.gt) live._head = parseInt(opts.gt)
-  else if (opts.gte) live._head = (parseInt(opts.gte) - 1)
-  else live._head = -1
-  assert(live._head >= -1, 'live._head not gte -1')
-  return live
+  if (opts.gt) liveStream._head = Number(opts.gt)
+  else if (opts.gte) liveStream._head = Number(opts.gte) - 1
+  else liveStream._head = -1
+  debug('liveStream._head, opts::', liveStream._head, opts)
+  return liveStream
 }
 
 Log.prototype.createAppendStream = function createAppendStream (opts) {
   opts = Object.assign({ limit: -1 }, opts || {})
-  assert(opts.limit >= -1, 'opts.limit not gte -1')
   var self = this
   var appendStream = new Writable({
     write (chunk, _, next) {

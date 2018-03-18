@@ -228,3 +228,12 @@ tape('log.createAppendStream(opts) - limit 2', function (t) {
     t.end()
   }, 100)
 })
+
+tape('levelup required', function (t) {
+  t.throws(
+    function () { Log(undefined) },
+    'TypeError: levelup instance required',
+    'init fails if not passed a levelup instance'
+  )
+  t.end()
+})
