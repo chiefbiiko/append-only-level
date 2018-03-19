@@ -76,10 +76,10 @@ Log.prototype.createAppendStream = function createAppendStream (opts) {
   opts = Object.assign({ limit: -1 }, opts || {})
   var self = this
   var appendStream = new Writable({
+    objectMode: true,
     write (chunk, _, next) {
-      var that = this
-      ++that._count
-      if (opts.limit !== -1 && that._count > opts.limit) return
+      ++this._count
+      if (opts.limit !== -1 && this._count > opts.limit) return
       self.append(chunk, function (err, seq) {
         if (err) return next(err)
         next(null)
