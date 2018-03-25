@@ -1,8 +1,9 @@
 {
   "name": "append-only-level",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "an append only log interface operating on a levelup",
   "main": "index.js",
+  "unpkg": "browser.js",
   "scripts": {
     "test": "tape test.js"
   },
