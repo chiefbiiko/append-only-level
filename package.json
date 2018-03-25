@@ -12,7 +12,7 @@
   },
   "keywords": [
     "append-only-log",
-    "abstract-leveldown",
+    "leveldb",
     "levelup",
     "level"
   ],
@@ -29,7 +29,5 @@
     "memdown": "^2.0.0",
     "tape": "^4.9.0"
   },
-  "dependencies": {
-    "readable-stream": "^2.3.5"
-  }
+  "dependencies": {}
 }

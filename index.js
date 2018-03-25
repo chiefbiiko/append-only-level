@@ -1,5 +1,4 @@
-var Readable = require('readable-stream')
-var Writable = require('stream').Writable
+var { Readable, Writable } = require('stream')
 var debug = require('debug')('append-only-level')
 
 function Log (db) {
