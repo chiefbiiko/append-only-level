@@ -1,9 +1,10 @@
 var { Readable, Writable } = require('stream')
 var debug = require('debug')('append-only-level')
 
+// TODO: get db's max key 4 _head @ init or -1 
 function Log (db) {
   if (!(this instanceof Log)) return new Log(db)
-  else if (!db) throw TypeError('levelup instance required', __filename, 7)
+  else if (!db) throw TypeError('levelup instance required')
   this._db = db
   this._head = -1
 }
