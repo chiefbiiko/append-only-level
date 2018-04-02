@@ -7,6 +7,13 @@ function Log (db) {
   else if (!db) throw TypeError('levelup instance required')
   this._db = db
   this._head = -1
+  //
+  this._choking = true
+  this._waiting = []
+  var keystream = this._db.createKeyStream()
+  keystream.on('data', function () {})
+  keystream.on('end', function () {})
+  //
 }
 
 function count () {
@@ -17,6 +24,9 @@ Log.prototype.__defineGetter__('size', count)
 Log.prototype.__defineGetter__('length', count)
 
 Log.prototype.append = function append (value, cb) {
+  //
+  if (this._choking) return this._waiting.push(value)
+  //
   var self = this
   self._db.put(String(++self._head), value, function (err) {
     if (err) return cb.call(self, err)
@@ -78,15 +88,15 @@ Log.prototype.createAppendStream = function createAppendStream (opts) {
   var appendStream = new Writable({
     objectMode: true,
     write (chunk, _, next) {
-      ++this._count
-      if (opts.limit !== -1 && this._count > opts.limit) return
+      ++this._writes
+      if (opts.limit !== -1 && this._writes > opts.limit) return
       self.append(chunk, function (err, seq) {
         if (err) return next(err)
         next(null)
       })
     }
   })
-  appendStream._count = 0
+  appendStream._writes = 0
   return appendStream
 }
 
