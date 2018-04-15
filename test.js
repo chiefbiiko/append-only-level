@@ -4,7 +4,7 @@ var levelup = require('levelup')
 var memdown = require('memdown')
 var enc = require('encoding-down')
 
-tape.only('append', function (t) {
+tape('append', function (t) {
   var log = Log(levelup(memdown('./append.db')))
   log.append('fraud', function (err, seq) {
     if (err) t.end(err)
