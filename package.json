@@ -30,5 +30,7 @@
     "memdown": "^2.0.0",
     "tape": "^4.9.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "end-of-stream": "^1.4.1"
+  }
 }
