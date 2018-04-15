@@ -2,8 +2,7 @@ var { Readable, Writable } = require('stream')
 var debug = require('debug')('append-only-level')
 // var eos = require('end-of-stream')
 
-// TODO: get db's max key 4 _head @ init or -1
-// find a way to get db size at init, maybe mafintosh/end-of-stream
+// TODO: get db's max key 4 _head @ init
 
 function Log (db) {
   if (!(this instanceof Log)) return new Log(db)
@@ -11,22 +10,22 @@ function Log (db) {
   this._db = db
   this._head = -1
 
-  this._choking = true
-  this._waiting = []
-  var self = this
-  var keystream = this._db.createKeyStream({ reverse: true, limit: 1 })
-  keystream.once('data', function oncedata (rec) {
-    debug('rec.key?::', rec)
-    self._head = rec.key
-  })
-  keystream.on('end', function onend () {
-    debug('::onend::')
-    debug('waiting::', self._waiting, self._waiting.length)
-    var fifo = self._waiting.reverse()
-    for (var i = 0; i < fifo.length; i++) fifo[i]()
-    // while (self._waiting.length) self._waiting.shift()()
-    self._choking = false
-  })
+  // this._choking = true
+  // this._waiting = []
+  // var self = this
+  // var keystream = this._db.createKeyStream({ reverse: true, limit: 1 })
+  // keystream.once('data', function oncedata (rec) {
+  //   debug('rec.key?::', rec)
+  //   self._head = rec.key
+  // })
+  // keystream.on('end', function onend () {
+  //   debug('::onend::')
+  //   debug('waiting::', self._waiting, self._waiting.length)
+  //   var fifo = self._waiting.reverse()
+  //   for (var i = 0; i < fifo.length; i++) fifo[i]()
+  //   // while (self._waiting.length) self._waiting.shift()()
+  //   self._choking = false
+  // })
 
 }
 
@@ -39,9 +38,9 @@ Log.prototype.__defineGetter__('length', count)
 
 Log.prototype.append = function append (value, cb) {
 
-  if (this._choking) {
-    return this._waiting.push(this.append.bind(this, value, cb))
-  }
+  // if (this._choking) {
+  //   return this._waiting.push(this.append.bind(this, value, cb))
+  // }
 
   var self = this
   self._db.put(String(++self._head), value, function (err) {
